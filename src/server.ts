@@ -35,10 +35,10 @@ export class Server {
         //ServeOptions expects _err to be of type unknown
         const err = _err as Error;
 
-        if (err.message.includes('Module not found')) {
-
+        if (err.message.includes('Module not found') || err.message === 'Error: No default export found for route module.') {
             return new Response('Not Found', { status: 404 });
         }
+        
         return new Response('Internal Server Error', { status: 500 });
     }
 
