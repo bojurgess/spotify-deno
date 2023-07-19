@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.194.0/http/mod.ts';
-import 'https://deno.land/std@0.194.0/dotenv/load.ts';
 
 export class Server {
     private port: number;
