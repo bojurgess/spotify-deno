@@ -17,7 +17,10 @@ export class Server {
         const path = url.pathname;
 
         try {
-            const module = await import(`./routes${path}.ts`);
+            const isIndex = path === '/';
+
+            const module = await import(`./routes${isIndex ? '/index' : path}.ts`);
+
             if (!module.default) {
                 throw new Error('No default export found for route module.');
             } else {
@@ -33,6 +36,7 @@ export class Server {
         const err = _err as Error;
 
         if (err.message.includes('Module not found')) {
+
             return new Response('Not Found', { status: 404 });
         }
         return new Response('Internal Server Error', { status: 500 });
