@@ -4,31 +4,37 @@ import 'https://deno.land/std@0.194.0/dotenv/load.ts';
 export class Server {
     private port: number;
     private hostname: string;
-    private client_id = '';
-    private client_secret = '';
-    private redirect_uri = '';
 
     public instance: Promise<void> | undefined = undefined;
 
     constructor() {
         this.port = parseInt(Deno.env.get('PORT') || '3000');
         this.hostname = Deno.env.get('HOST') || 'localhost';
-        const client_id = Deno.env.get('SPOTIFY_CLIENT_ID');
-        const client_secret = Deno.env.get('SPOTIFY_CLIENT_SECRET');
-        const redirect_uri = Deno.env.get('SPOTIFY_REDIRECT_URI');
+    }
 
-        if (!client_id || !client_secret || !redirect_uri) {
-            throw new Error('Missing required environment variables, exiting...');
+    private handler = async (req: Request): Promise<Response> => {
+        const url = new URL(req.url);
+        const path = url.pathname;
+
+        try {
+            const module = await import(`./routes${path}.ts`);
+            if (!module.default) {
+                throw new Error('No default export found for route module.');
+            } else {
+                return module.default(req);
+            }
+        } catch (err) {
+            throw new Error(err);
         }
     }
 
-    private handler = (_req: Request): Response => {
-        // write handler logic
-        return new Response('Hello World!');
-    }
-
     private errorHandler = (_err: unknown): Response | Promise<Response> => {
-        // write error handler logic
+        //ServeOptions expects _err to be of type unknown
+        const err = _err as Error;
+
+        if (err.message.includes('Module not found')) {
+            return new Response('Not Found', { status: 404 });
+        }
         return new Response('Internal Server Error', { status: 500 });
     }
 
